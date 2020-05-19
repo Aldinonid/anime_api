@@ -1,55 +1,61 @@
 // ? Get all DOM
-const searchButton = document.querySelector('#search-button');
-const inputKeyword = document.querySelector('#search-input');
-
-// ? Function retrieve data from API
-function searchAnime() {
-  fetch(`https://api.jikan.moe/v3/search/anime?type=anime&q=${inputKeyword.value}`)
-    .then(response => response.json())
-    .then(response => {
-      const anime = response.results;
-      let cards = '';
-      anime.forEach(a => cards += showCard(a));
-      const animeContainer = document.querySelector('#anime-list');
-      animeContainer.innerHTML = cards;
-      inputKeyword.value = '';
-
-      // ? Ketika tonbol detail di-klik 
-      const modalDetailButton = document.querySelectorAll('.modal-detail-button');
-      modalDetailButton.forEach(btn => {
-        btn.addEventListener('click', function () {
-          const malId = this.dataset.mal_id;
-          fetch(`https://api.jikan.moe/v3/anime/${malId}`)
-            .then(response => response.json())
-            .then(a => {
-              const animeDetail = showAnimeDetail(a);
-              const modalBody = document.querySelector('.modal-body');
-              modalBody.innerHTML = animeDetail;
-
-              // ? Ganti title modal
-              const modalTitle = document.querySelector('#animeModalTitle');
-              modalTitle.innerHTML = `${a.title}`;
-            })
-        });
-      });
-    });
-};
-
+const searchButton = document.querySelector("#search-button");
+const inputKeyword = document.querySelector("#search-input");
+const modalTitle = document.querySelector("#animeModalTitle");
+const animeContainer = document.querySelector("#anime-list");
 
 // ?  Fetch to anime API (Jikan 時間) onclick button search
-searchButton.addEventListener('click', () => {
-  searchAnime();
+searchButton.addEventListener("click", async () => {
+  let animes = await getAnime(inputKeyword.value);
+  updateUI(animes);
 });
 
 // ? Fetch to anime API (Jikan 時間) when press ENTER
-$('#search-input').on('keyup', (e) => {
+inputKeyword.addEventListener("keyup", async (e) => {
   if (e.keyCode === 13) {
-    searchAnime();
+    let animes = await getAnime(inputKeyword.value);
+    updateUI(animes);
   }
-})
+});
 
+// ? Get Anime Detail when "Show Detail" is clicked with event binding
+document.addEventListener("click", async (e) => {
+  if (e.target.classList.contains("modal-detail-button")) {
+    const malId = e.target.dataset.mal_id;
+    let animeDetail = await getAnimeDetail(malId);
+    updateUIDetail(animeDetail);
+  }
+});
 
-function showCard(a) {
+// ? Function retrieve data from API
+let getAnime = (keyword) => {
+  return fetch(`https://api.jikan.moe/v3/search/anime?type=anime&q=${keyword}`)
+    .then((response) => response.json())
+    .then((response) => response.results);
+};
+
+let getAnimeDetail = (malId) => {
+  return fetch(`https://api.jikan.moe/v3/anime/${malId}`)
+    .then((response) => response.json())
+    .then((response) => response);
+};
+
+// ? Update UI Function
+const updateUI = (animes) => {
+  let cards = "";
+  animes.forEach((a) => (cards += showCard(a)));
+  animeContainer.innerHTML = cards;
+  inputKeyword.value = "";
+};
+
+const updateUIDetail = (a) => {
+  const animeDetail = showAnimeDetail(a);
+  const modalBody = document.querySelector(".modal-body");
+  modalBody.innerHTML = animeDetail;
+  modalTitle.innerHTML = `${a.title}`;
+};
+
+let showCard = (a) => {
   return /*html*/ `<div class="col-md-4">
                     <div class="card mb-3">
                       <img src="${a.image_url}" class="card-img-top" alt="...">
@@ -59,10 +65,10 @@ function showCard(a) {
                         <a href="#" class="btn btn-primary modal-detail-button" data-toggle="modal" data-target="#animeDetailModal" data-mal_id="${a.mal_id}" >Show Detail</a>
                       </div>
                     </div>
-                  </div>`
-}
+                  </div>`;
+};
 
-function showAnimeDetail(a) {
+let showAnimeDetail = (a) => {
   return /*html*/ `<div class="container-fluid">
                     <div class="row">
                       <div class="col-md-3">
@@ -84,5 +90,26 @@ function showAnimeDetail(a) {
                         </ul>
                       </div>
                     </div>
-                  </div>`
-}
+                  </div>`;
+};
+
+// // ? Ketika tonbol detail di-klik
+// const modalDetailButton = document.querySelectorAll(
+//   ".modal-detail-button"
+// );
+// modalDetailButton.forEach((btn) => {
+//   btn.addEventListener("click", function () {
+//     const malId = this.dataset.mal_id;
+//     fetch(`https://api.jikan.moe/v3/anime/${malId}`)
+//       .then((response) => response.json())
+//       .then((a) => {
+//         const animeDetail = showAnimeDetail(a);
+//         const modalBody = document.querySelector(".modal-body");
+//         modalBody.innerHTML = animeDetail;
+
+//         // ? Ganti title modal
+//         const modalTitle = document.querySelector("#animeModalTitle");
+//         modalTitle.innerHTML = `${a.title}`;
+//       });
+//   });
+// });
