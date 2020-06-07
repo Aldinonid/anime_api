@@ -3,10 +3,13 @@ const searchButton = document.querySelector("#search-button");
 const inputKeyword = document.querySelector("#search-input");
 const modalTitle = document.querySelector("#animeModalTitle");
 const animeContainer = document.querySelector("#anime-list");
+const loading = document.querySelector("#loading-screen");
 
 //* Retrieve data from API Jikan MOE *//
 let getAnime = (keyword) => {
-  return fetch(`https://api.jikan.moe/v3/search/anime?type=anime&q=${keyword}`)
+  loading.innerHTML = loadingSpinner;
+  animeContainer.innerHTML = "";
+  return fetch(`https://api.jikan.moe/v3/search/anime?q=${keyword}`)
     .then((response) => response.json())
     .then((response) => response.results);
 };
@@ -17,11 +20,11 @@ let getAnimeDetail = (malId) => {
     .then((response) => response);
 };
 
-
 //* Update UI Function *//
 const updateUI = (animes) => {
   let cards = "";
   animes.forEach((a) => (cards += showCard(a)));
+  loading.innerHTML = ''
   animeContainer.innerHTML = cards;
   inputKeyword.value = "";
 };
@@ -32,7 +35,6 @@ const updateUIDetail = (a) => {
   modalBody.innerHTML = animeDetail;
   modalTitle.innerHTML = `${a.title}`;
 };
-
 
 //* onclick button search *//
 searchButton.addEventListener("click", async () => {
@@ -57,6 +59,18 @@ document.addEventListener("click", async (e) => {
   }
 });
 
+const loadingSpinner = /*html*/ `
+<div class="spinner-grow text-success" role="status">
+  <span class="sr-only">Loading...</span>
+</div>
+<div class="spinner-grow text-danger" role="status">
+  <span class="sr-only">Loading...</span>
+</div>
+<div class="spinner-grow text-warning" role="status">
+  <span class="sr-only">Loading...</span>
+</div>
+<h1 className="h3">Loading...</h1>
+`;
 
 let showCard = (a) => {
   return /*html*/ `
