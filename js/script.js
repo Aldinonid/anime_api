@@ -10,21 +10,37 @@ let getAnime = (keyword) => {
   loading.innerHTML = loadingSpinner;
   animeContainer.innerHTML = "";
   return fetch(`https://api.jikan.moe/v3/search/anime?q=${keyword}`)
-    .then((response) => response.json())
-    .then((response) => response.results);
+    .then((res) => {
+      if (!res.ok) {
+        throw Error(res.statusText);
+      }
+      return res.json();
+    })
+    .then((res) => {
+      if (res.results.length === 0) {
+        loading.innerHTML = "";
+        throw new Error("Anime not Found !");
+      }
+      return res.results;
+    });
 };
 
 let getAnimeDetail = (malId) => {
   return fetch(`https://api.jikan.moe/v3/anime/${malId}`)
-    .then((response) => response.json())
-    .then((response) => response);
+    .then((res) => {
+      if (!res.ok) {
+        throw Error(res.statusText);
+      }
+      return res.json();
+    })
+    .then((res) => res);
 };
 
 //* Update UI Function *//
 const updateUI = (animes) => {
   let cards = "";
   animes.forEach((a) => (cards += showCard(a)));
-  loading.innerHTML = ''
+  loading.innerHTML = "";
   animeContainer.innerHTML = cards;
   inputKeyword.value = "";
 };
@@ -38,15 +54,23 @@ const updateUIDetail = (a) => {
 
 //* onclick button search *//
 searchButton.addEventListener("click", async () => {
-  let animes = await getAnime(inputKeyword.value);
-  updateUI(animes);
+  try {
+    let animes = await getAnime(inputKeyword.value);
+    updateUI(animes);
+  } catch (err) {
+    alert(err);
+  }
 });
 
 //* Event press ENTER *//
 inputKeyword.addEventListener("keyup", async (e) => {
   if (e.keyCode === 13) {
-    let animes = await getAnime(inputKeyword.value);
-    updateUI(animes);
+    try {
+      let animes = await getAnime(inputKeyword.value);
+      updateUI(animes);
+    } catch (err) {
+      alert(err);
+    }
   }
 });
 
