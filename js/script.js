@@ -9,7 +9,7 @@ const loading = document.querySelector("#loading-screen");
 let getAnime = (keyword) => {
   loading.innerHTML = loadingSpinner;
   animeContainer.innerHTML = "";
-  return fetch(`https://api.jikan.moe/v4/search/anime?q=${keyword}`)
+  return fetch(`https://api.jikan.moe/v4/anime?q=${keyword}`)
     .then((res) => {
       if (!res.ok) {
         throw Error(res.statusText);
