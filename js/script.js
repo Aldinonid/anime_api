@@ -21,7 +21,7 @@ let getAnime = (keyword) => {
         loading.innerHTML = "";
         throw new Error("Anime not Found !");
       }
-      return res.results;
+      return res.data;
     });
 };
 
