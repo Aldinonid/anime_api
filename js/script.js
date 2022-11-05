@@ -17,7 +17,7 @@ let getAnime = (keyword) => {
       return res.json();
     })
     .then((res) => {
-      if (res.results.length === 0) {
+      if (res.data.length === 0) {
         loading.innerHTML = "";
         throw new Error("Anime not Found !");
       }
