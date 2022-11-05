@@ -26,14 +26,14 @@ let getAnime = (keyword) => {
 };
 
 let getAnimeDetail = (malId) => {
-  return fetch(`https://api.jikan.moe/v3/anime/${malId}`)
+  return fetch(`https://api.jikan.moe/v4/anime/${malId}`)
     .then((res) => {
       if (!res.ok) {
         throw Error(res.statusText);
       }
       return res.json();
     })
-    .then((res) => res);
+    .then((res) => res.data);
 };
 
 //* Update UI Function *//
@@ -100,7 +100,7 @@ let showCard = (a) => {
   return /*html*/ `
   <div class="col-md-4">
     <div class="card mb-3">
-      <img src="${a.image_url}" class="card-img-top" alt="...">
+      <img src="${a.images.jpg.image_url}" class="card-img-top" alt="...">
       <div class="card-body">
         <h5 class="card-title">${a.title}</h5>
         <h6 class="card-subtitle mb-2 text-muted">Episode : ${a.episodes}</h6>
@@ -115,7 +115,7 @@ let showAnimeDetail = (a) => {
   <div class="container-fluid">
     <div class="row">
       <div class="col-md-3">
-        <img src="${a.image_url}" alt="" class="img-fluid">
+        <img src="${a.images.jpg.image_url}" alt="" class="img-fluid">
       </div>
       <div class="col-md">
         <ul class="list-group">
@@ -128,7 +128,7 @@ let showAnimeDetail = (a) => {
           <li class="list-group-item"><strong>Rating : </strong>${a.rating}</li>
           <li class="list-group-item"><strong>Synopsis : </strong>${a.synopsis}</li>
           <li class="list-group-item"><div class="embed-responsive embed-responsive-16by9">
-          <iframe class="embed-responsive-item" src="${a.trailer_url}" allowfullscreen></iframe>
+          <iframe class="embed-responsive-item" src="${a.trailer.embed_url}" allowfullscreen></iframe>
         </div></li>
         </ul>
       </div>
