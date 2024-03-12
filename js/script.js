@@ -4,45 +4,24 @@ const inputKeyword = document.querySelector("#search-input");
 const modalTitle = document.querySelector("#animeModalTitle");
 const animeContainer = document.querySelector("#anime-list");
 const loading = document.querySelector("#loading-screen");
+const resultTitle = document.querySelector('#recomendation-title')
 
-//* Retrieve data from API Jikan MOE *//
-let getAnime = (keyword) => {
-  loading.innerHTML = loadingSpinner;
-  animeContainer.innerHTML = "";
-  return fetch(`https://api.jikan.moe/v4/anime?q=${keyword}`)
-    .then((res) => {
-      if (!res.ok) {
-        throw Error(res.statusText);
-      }
-      return res.json();
-    })
-    .then((res) => {
-      if (res.data.length === 0) {
-        loading.innerHTML = "";
-        throw new Error("Anime not Found !");
-      }
-      return res.data;
-    });
-};
-
-let getAnimeDetail = (malId) => {
-  return fetch(`https://api.jikan.moe/v4/anime/${malId}`)
-    .then((res) => {
-      if (!res.ok) {
-        throw Error(res.statusText);
-      }
-      return res.json();
-    })
-    .then((res) => res.data);
-};
+//* Fetch function *//
+const fetchAnime = async (query) => {
+  const response = await fetch(`https://api.jikan.moe/v4/${query}`)
+  const animes = await response.json()
+  return animes
+}
 
 //* Update UI Function *//
-const updateUI = (animes) => {
+const updateUI = (animes, keyword, isRecommended = false) => {
   let cards = "";
-  animes.forEach((a) => (cards += showCard(a)));
+  animes.forEach((a) => (cards += showCard(a, isRecommended)))
   loading.innerHTML = "";
   animeContainer.innerHTML = cards;
-  inputKeyword.value = "";
+  resultTitle.innerHTML = isRecommended 
+    ? 'Recommendation anime for this week' 
+    : `Search of anime '${keyword}' has ${animes.length} results`
 };
 
 const updateUIDetail = (a) => {
@@ -55,59 +34,147 @@ const updateUIDetail = (a) => {
 //* onclick button search *//
 searchButton.addEventListener("click", async () => {
   try {
-    let animes = await getAnime(inputKeyword.value);
-    updateUI(animes);
+    loading.innerHTML = loadingSpinner;
+    resultTitle.innerHTML = ''
+    animeContainer.innerHTML = "";
+    const animes = await fetchAnime(`anime?q=${inputKeyword.value}`)
+    updateUI(animes.data, inputKeyword.value);
   } catch (err) {
     alert(err);
+    resultTitle.innerHTML = 'No anime found'
   }
 });
 
 //* Event press ENTER *//
 inputKeyword.addEventListener("keyup", async (e) => {
-  if (e.keyCode === 13) {
+  if (e.code.match('Enter')) {
     try {
-      let animes = await getAnime(inputKeyword.value);
-      updateUI(animes);
+      loading.innerHTML = loadingSpinner;
+      resultTitle.innerHTML = ''
+      animeContainer.innerHTML = "";
+      if (!inputKeyword.value.length) {
+        const animes = await fetchAnime('recommendations/anime')
+        const animeData = [].concat.apply([], animes.data.map(anime => anime.entry))
+        updateUI(animeData, '', true)
+      } else {
+        const animes = await fetchAnime(`anime?q=${inputKeyword.value}`)
+        updateUI(animes.data, inputKeyword.value)
+      }
     } catch (err) {
-      alert(err);
+      alert(err)
+      resultTitle.innerHTML = 'No anime found'
     }
   }
 });
 
-//* Get Anime Detail when "Show Detail" is clicked with event binding *//
+//* Fetch anime when DOM loaded *//
+addEventListener('DOMContentLoaded', async () => {
+  try {
+    loading.innerHTML = loadingSpinner;
+    animeContainer.innerHTML = '';
+    const animes = await fetchAnime('recommendations/anime')
+    const animeData = [].concat.apply([], animes.data.map(anime => anime.entry))
+    updateUI(animeData, '', true)
+  } catch (err) {
+    alert(err)
+  }
+})
+
+//* Event binding for all click in document *//
 document.addEventListener("click", async (e) => {
   if (e.target.classList.contains("modal-detail-button")) {
     const malId = e.target.dataset.mal_id;
-    let animeDetail = await getAnimeDetail(malId);
-    updateUIDetail(animeDetail);
+    let animeDetail = await fetchAnime(`anime/${malId}`);
+    updateUIDetail(animeDetail.data);
   }
+
+  if (
+    e.target.id.match('close-modal-btn') ||
+    e.target.id.match('top-close-modal-btn') ||
+    e.target.closest(".modal")
+  ) stopVideo()
 });
 
+//* Event binding for all key typed in document *//
+document.addEventListener('keyup', (e) => {
+  if (e.code.match('Escape')) stopVideo()
+})
+
+const stopVideo = () => {
+  const iframe = document.querySelector('#ytplayer')
+  iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*')
+}
+
 const loadingSpinner = /*html*/ `
-<div class="spinner-grow text-success" role="status">
-  <span class="sr-only">Loading...</span>
-</div>
-<div class="spinner-grow text-danger" role="status">
-  <span class="sr-only">Loading...</span>
-</div>
-<div class="spinner-grow text-warning" role="status">
-  <span class="sr-only">Loading...</span>
-</div>
-<h1 className="h3">Loading...</h1>
+  <div class="spinner-grow text-success" role="status">
+    <span class="sr-only">Loading...</span>
+  </div>
+  <div class="spinner-grow text-danger" role="status">
+    <span class="sr-only">Loading...</span>
+  </div>
+  <div class="spinner-grow text-warning" role="status">
+    <span class="sr-only">Loading...</span>
+  </div>
+  <h1 className="h3">Loading...</h1>
 `;
 
-let showCard = (a) => {
-  return /*html*/ `
-  <div class="col-md-4">
-    <div class="card mb-3">
-      <img src="${a.images.jpg.image_url}" class="card-img-top" alt="...">
-      <div class="card-body">
-        <h5 class="card-title">${a.title}</h5>
-        <h6 class="card-subtitle mb-2 text-muted">Episode : ${a.episodes}</h6>
-        <a href="#" class="btn btn-primary modal-detail-button" data-toggle="modal" data-target="#animeDetailModal" data-mal_id="${a.mal_id}" >Show Detail</a>
+let showCard = (a, isRecommended = false) => {
+  if (isRecommended) {
+    return /*html*/ `
+    <div class="col-6 col-sm-3 mb-4">
+      <div class="card h-100">
+        <img 
+          src="${a.images.jpg.large_image_url}" 
+          class="card-img-top" 
+          alt="${a.title}" 
+          height="370"
+          style="object-fit: cover;"
+        />
+        <div class="card-body">
+          <h5 class="card-title">${a.title}</h5>
+        </div>
+        <div class="card-footer">
+          <a 
+            href="#" 
+            class="btn btn-primary modal-detail-button" 
+            data-toggle="modal" 
+            data-target="#animeDetailModal" 
+            data-mal_id="${a.mal_id}"
+          >
+            Show Detail
+          </a>
+        </div>
       </div>
-    </div>
-  </div>`;
+    </div>`;
+  } else {
+    return /*html*/ `
+    <div class="col-6 col-sm-3 mb-4">
+      <div class="card h-100">
+        <img 
+          src="${a.images.jpg.large_image_url}" 
+          class="card-img-top" 
+          alt="${a.title}" 
+          height="370"
+          style="object-fit: cover;"
+        />
+        <div class="card-body">
+          <h5 class="card-title">${a.title}</h5>
+          <h6 class="card-subtitle mb-2 text-muted">Episode : ${a.episodes}</h6>
+        </div>
+        <div class="card-footer">
+          <a 
+            href="#" 
+            class="btn btn-primary modal-detail-button" 
+            data-toggle="modal" 
+            data-target="#animeDetailModal" 
+            data-mal_id="${a.mal_id}"
+          >
+            Show Detail
+          </a>
+        </div>
+      </div>
+    </div>`;
+  }
 };
 
 let showAnimeDetail = (a) => {
@@ -128,8 +195,7 @@ let showAnimeDetail = (a) => {
           <li class="list-group-item"><strong>Rating : </strong>${a.rating}</li>
           <li class="list-group-item"><strong>Synopsis : </strong>${a.synopsis}</li>
           <li class="list-group-item"><div class="embed-responsive embed-responsive-16by9">
-          <iframe class="embed-responsive-item" src="${a.trailer.embed_url}" allowfullscreen></iframe>
-        </div></li>
+          <iframe class="embed-responsive-item" id="ytplayer" src="${a.trailer.embed_url}" allowfullscreen />
         </ul>
       </div>
     </div>

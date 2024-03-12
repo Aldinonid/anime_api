@@ -17,38 +17,26 @@
 
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-      <a class="navbar-brand" href="#">Aldinimes</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
-        aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <a class="navbar-brand" href=".">Aldinimes</a>
+
+      <div class="d-flex">
+        <input type="text" class="form-control mr-2" placeholder="Anime title..." id="search-input">
+        <div class="input-group-append">
+          <button class="btn btn-info" type="button" id="search-button">Search</button>
+        </div>
+      </div>
     </div>
   </nav>
 
   <div class="container">
 
-    <div class="row mt-3 justify-content-center">
-      <div class="col-md-8">
-        <h1 class="text-center">アニメ検索！</h1>
-
-        <div class="input-group mb-3">
-          <input type="text" class="form-control" placeholder="アニメタイトル。。。" aria-label="Recipient's username"
-            aria-describedby="button-addon2" id="search-input">
-          <div class="input-group-append">
-            <button class="btn btn-dark" type="button" id="search-button">探る！</button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <hr>
+    <h3 class="mt-3" id="recomendation-title"></h3>
 
     <div class="container-fluid text-center" id="loading-screen">
 
     </div>
 
-    <div class="row" id="anime-list">
+    <div class="row mt-4" id="anime-list">
 
     </div>
 
@@ -62,7 +50,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="animeModalTitle"></h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <button type="button" id="top-close-modal-btn" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -70,7 +58,7 @@
 
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
+          <button type="button" id="close-modal-btn" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
