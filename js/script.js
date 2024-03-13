@@ -13,6 +13,9 @@ const fetchAnime = async (query) => {
   return animes
 }
 
+const pluralize = (count, noun, suffix = 's') =>
+  `${count} ${noun}${count !== 1 ? suffix : ''}`;
+
 //* Update UI Function *//
 const updateUI = (animes, keyword, isRecommended = false) => {
   let cards = "";
@@ -20,8 +23,8 @@ const updateUI = (animes, keyword, isRecommended = false) => {
   loading.innerHTML = "";
   animeContainer.innerHTML = cards;
   resultTitle.innerHTML = isRecommended 
-    ? 'Recommendation anime for this week' 
-    : `Search of anime '${keyword}' has ${animes.length} results`
+    ? `Recommendation anime for this season (${pluralize(animes.length, 'result')})`
+    : `Search of anime '${keyword}' (${pluralize(animes.length, 'result')})`
 };
 
 const updateUIDetail = (a) => {
@@ -72,9 +75,13 @@ addEventListener('DOMContentLoaded', async () => {
   try {
     loading.innerHTML = loadingSpinner;
     animeContainer.innerHTML = '';
-    const animes = await fetchAnime('recommendations/anime')
-    const animeData = [].concat.apply([], animes.data.map(anime => anime.entry))
-    updateUI(animeData, '', true)
+    const animes = await fetchAnime('seasons/now')
+
+    //? Logic to extract recommendation anime data ?// 
+    // const animeData = [].concat.apply([], animes.data.map(anime => anime.entry))
+    // const uniqueAnimeData = Array.from(new Set(animeData.map(anime => anime.mal_id))).map(id => animeData.find(anime => anime.mal_id === id))
+
+    updateUI(animes.data, '', true)
   } catch (err) {
     alert(err)
   }
