@@ -17,12 +17,12 @@ const pluralize = (count, noun, suffix = 's') =>
   `${count} ${noun}${count !== 1 ? suffix : ''}`;
 
 //* Update UI Function *//
-const updateUI = (animes, keyword, isRecommended = false) => {
+const updateUI = (animes, keyword, isNowSeason = false) => {
   let cards = "";
-  animes.forEach((a) => (cards += showCard(a, isRecommended)))
+  animes.forEach((a) => (cards += showCard(a, isNowSeason)))
   loading.innerHTML = "";
   animeContainer.innerHTML = cards;
-  resultTitle.innerHTML = isRecommended 
+  resultTitle.innerHTML = isNowSeason 
     ? `Recommendation anime for this season (${pluralize(animes.length, 'result')})`
     : `Search of anime '${keyword}' (${pluralize(animes.length, 'result')})`
 };
@@ -75,13 +75,14 @@ addEventListener('DOMContentLoaded', async () => {
   try {
     loading.innerHTML = loadingSpinner;
     animeContainer.innerHTML = '';
-    const animes = await fetchAnime('seasons/now')
+    let anime = null, page = 1, results = []
+    do {
+      anime = await fetchAnime(`seasons/now?page=${page++}`)
+      results = results.concat(anime.data)
+    }
+    while (page < anime.pagination?.last_visible_page - 1)
 
-    //? Logic to extract recommendation anime data ?// 
-    // const animeData = [].concat.apply([], animes.data.map(anime => anime.entry))
-    // const uniqueAnimeData = Array.from(new Set(animeData.map(anime => anime.mal_id))).map(id => animeData.find(anime => anime.mal_id === id))
-
-    updateUI(animes.data, '', true)
+    updateUI(results, '', true)
   } catch (err) {
     alert(err)
   }
@@ -125,9 +126,9 @@ const loadingSpinner = /*html*/ `
   <h1 className="h3">Loading...</h1>
 `;
 
-let showCard = (a, isRecommended = false) => {
+let showCard = (a, isNowSeason = false) => {
   const episodes = a.episodes ?? 'unknown'
-  if (isRecommended) {
+  if (isNowSeason) {
     return /*html*/ `
     <div class="col-6 col-sm-3 mb-4">
       <div class="card h-100">
