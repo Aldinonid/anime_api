@@ -19,7 +19,7 @@ const pluralize = (count, noun, suffix = 's') =>
 //* Update UI Function *//
 const updateUI = (animes, keyword, isNowSeason = false) => {
   let cards = "";
-  animes.forEach((a) => (cards += showCard(a, isNowSeason)))
+  animes.forEach((a) => (cards += showCard(a)))
   loading.innerHTML = "";
   animeContainer.innerHTML = cards;
   resultTitle.innerHTML = isNowSeason 
@@ -126,87 +126,58 @@ const loadingSpinner = /*html*/ `
   <h1 className="h3">Loading...</h1>
 `;
 
-let showCard = (a, isNowSeason = false) => {
-  const episodes = a.episodes ?? 'unknown'
-  if (isNowSeason) {
-    return /*html*/ `
-    <div class="col-6 col-sm-3 mb-4">
-      <div class="card h-100">
-        <img 
-          src="${a.images.jpg.large_image_url}" 
-          class="card-img-top" 
-          alt="${a.title}" 
-          height="370"
-          style="object-fit: cover;"
-        />
-        <div class="card-body">
-          <h5 class="card-title">${a.title}</h5>
-        </div>
-        <div class="card-footer">
-          <a 
-            href="#" 
-            class="btn btn-primary modal-detail-button" 
-            data-toggle="modal" 
-            data-target="#animeDetailModal" 
-            data-mal_id="${a.mal_id}"
-          >
-            Show Detail
-          </a>
-        </div>
+let showCard = (a) => {
+  const episodes = a?.episodes ?? 'unknown'
+  return /*html*/ `
+  <div class="col-6 col-sm-3 mb-4">
+    <div class="card h-100">
+      <img 
+        src="${a?.images.jpg.large_image_url}" 
+        class="card-img-top" 
+        alt="${a?.title}" 
+        height="370"
+        style="object-fit: cover;"
+      />
+      <div class="card-body">
+        <h5 class="card-title">${a?.title}</h5>
+        <h6 class="card-subtitle mb-2 text-muted">Total Episodes: ${episodes}</h6>
       </div>
-    </div>`;
-  } else {
-    return /*html*/ `
-    <div class="col-6 col-sm-3 mb-4">
-      <div class="card h-100">
-        <img 
-          src="${a.images.jpg.large_image_url}" 
-          class="card-img-top" 
-          alt="${a.title}" 
-          height="370"
-          style="object-fit: cover;"
-        />
-        <div class="card-body">
-          <h5 class="card-title">${a.title}</h5>
-          <h6 class="card-subtitle mb-2 text-muted">Episode : ${episodes}</h6>
-        </div>
-        <div class="card-footer">
-          <a 
-            href="#" 
-            class="btn btn-primary modal-detail-button" 
-            data-toggle="modal" 
-            data-target="#animeDetailModal" 
-            data-mal_id="${a.mal_id}"
-          >
-            Show Detail
-          </a>
-        </div>
+      <div class="card-footer">
+        <a 
+          href="#" 
+          class="btn btn-primary modal-detail-button" 
+          data-toggle="modal" 
+          data-target="#animeDetailModal" 
+          data-mal_id="${a?.mal_id}"
+        >
+          Show Detail
+        </a>
       </div>
-    </div>`;
-  }
+    </div>
+  </div>`;
 };
 
 let showAnimeDetail = (a) => {
-  const episodes = a.episodes ?? 'unknown'
-  const rating = a.rating ?? 'none'
+  const episodes = a?.episodes ?? 'unknown'
+  const rating = a?.rating ?? 'none'
   return /*html*/ `
   <div class="container-fluid">
     <div class="row">
       <div class="col-md-3">
-        <img src="${a.images.jpg.image_url}" alt="" class="img-fluid">
+        <img src="${a?.images.jpg.image_url}" alt="" class="img-fluid">
       </div>
       <div class="col-md">
         <ul class="list-group">
           <li class="list-group-item">
-            <h4>Japanese Title : ${a.title_japanese}</h4>
+            <h4>Japanese Title : ${a?.title_japanese}</h4>
           </li>
-          <li class="list-group-item"><strong>Type : </strong>${a.type}</li>
+          <li class="list-group-item"><strong>Type : </strong>${a?.type}</li>
           <li class="list-group-item"><strong>Episode : </strong>${episodes}</li>
-          <li class="list-group-item"><strong>Status : </strong>${a.status}</li>
+          <li class="list-group-item"><strong>Status : </strong>${a?.status}</li>
           <li class="list-group-item"><strong>Rating : </strong>${rating}</li>
-          <li class="list-group-item"><strong>Synopsis : </strong>${a.synopsis}</li>
+          <li class="list-group-item"><strong>Synopsis : </strong>${a?.synopsis}</li>
           <li class="list-group-item"><div class="embed-responsive embed-responsive-16by9">
-          <iframe class="embed-responsive-item" id="ytplayer" src="${a.trailer.embed_url}" allowfullscreen />
+          <iframe class="embed-responsive-item" id="ytplayer" src="${a?.trailer.embed_url}" allowfullscreen />
         </ul>
       </div>
     </div>
